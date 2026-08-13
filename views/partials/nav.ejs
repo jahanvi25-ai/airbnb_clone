@@ -1,0 +1,29 @@
+<header class="bg-red-500 text-white p-4 shadow-md">
+  <nav class="container mx-auto flex justify-between items-center">
+    <ul class="flex space-x-4">
+      <li><a href="/">Home</a></li>
+
+      <% if (!isLoggedIn) { %>
+        <li><a href="/login">Login</a></li>
+
+      <% } else if (isAdmin) { %>
+        <li><a href="/admin/add-home">Add Home</a></li>
+        <li><a href="/admin/admin-home-list">Admin's List</a></li>
+        <li>
+          <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+          </form>
+        </li>
+
+      <% } else { %>
+        <li><a href="/store/favourite-list">Favourite List</a></li>
+        <li><a href="/store/bookings">Bookings</a></li>
+        <li>
+          <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+          </form>
+        </li>
+      <% } %>
+    </ul>
+  </nav>
+</header>
