@@ -39,31 +39,25 @@ app.use(session({
 
 
 app.use((req, res, next) => {
- 
-  req.isLoggedIn = req.session.isLoggedIn;
-    
+  req.isLoggedIn = Boolean(req.session.isLoggedIn);
+  req.isAdmin = req.session.user?.userType === 'host';
   next();
 }); 
 
 app.use('/uploads',express.static('uploads'))
 app.use((req,res,next)=>{
-    req.isLoggedIn = req.isLoggedIn || false;
     res.locals.currentPage = req.path;
     res.locals.isLoggedIn = req.isLoggedIn;
-    res.locals.isAdmin = false;
+    res.locals.isAdmin = req.isAdmin;
     next()
 })
 app.use(express.static(path.join(rootdir, 'public')))
 app.use(authRouter)
 app.use(userRouter)
-app.use(hostRouter,(req,res,next)=>{
-    if(req.isLoggedIn){
-        next();
-    }else{
-        res.redirect("/login")
-    }
-})
-app.use(hostRouter)
+app.use((req, res, next) => {
+    if (req.isLoggedIn && req.isAdmin) return next();
+    res.redirect("/login");
+}, hostRouter)
 
 
 app.use(express.static(path.join(rootdir,'public')))

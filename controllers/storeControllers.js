@@ -1,59 +1,58 @@
 const Home = require("../models/home")
-const Favourite = require("../models/favourite")
+const User = require('../models/user')
 
+exports.favouriteList = async (req, res, next) => {
+  try {
+    const userId = req.session.user?.id;
 
-exports.favouriteList =(req,res,next)=>{
-    
-    Favourite.find().populate('homeId')
-.then(favourites => {
-      const favouriteHomes = favourites.map(fav => fav.homeId);
-    res.render('store/favourite-list', {
-        favouriteHomes:favouriteHomes,
-        pageTitle:"Favourites",
-        isLoggedIn :req.isLoggedIn,
-        isAdmin:false
+    if (!userId) {
+      return res.redirect('/login');
     }
-       );
-    }).catch(error=>{
-        console.log('error while fetching favourites',error)
-    })
-    
-}
 
+    const user = await User.findById(userId).populate('favourites');
 
-exports.removeHome = (req, res,next)=>{
-   const homeId= req.params.homeId
-   console.log('id',homeId)
-    
-    Favourite.findOneAndDelete({homeId:homeId}).then(homeId=>{
-        console.log('this record is removed from Favourites',homeId)
-        res.redirect("/store/favourite-list")
-    }).catch(error=>{
-       
-            console.log("error while removing from favourites",error)
-    })
-     
-}
+    if (!user) {
+      return req.session.destroy(() => res.redirect('/login'));
+    }
 
-exports.postAddToFavourite = (req,res,next)=>{
-    const _id = req.body._id
- 
-    const favourite = new Favourite({homeId:_id})
-    Favourite.findOne({homeId:_id}).then(existing=>{
-        if(existing){
-             res.redirect('/store/favourite-list')
-              return existing
-        }
-        return favourite.save().then((favourite)=>{
-            console.log('Added to favourite',favourite)
-             res.redirect('/store/favourite-list')
-        }).catch(error=>{
-            console.log('error while adding to favourite',error)
-        })
-      
-    }).catch(error=>{
-    console.log('error while adding to favourite',error)
+    res.render('store/favourite-list', {
+      favouriteHomes: user.favourites,
+      pageTitle: 'Favourites',
+      isLoggedIn: req.isLoggedIn,
+      isAdmin: req.isAdmin
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+exports.removeHome = async (req, res,next)=>{
+   const homeId= req.params.homeId
+    const userId = req.session.user.id;
+    const user = await User.findById(userId);
+     if(user.favourites.includes(homeId)){
+        user.favourites = user.favourites.filter(fav => fav != homeId);
+        await user.save();
+     } 
+      res.redirect('/store/favourite-list');
+}
+
+exports.postAddToFavourite = async (req,res,next)=>{
+    const homeId = req.body._id;
+    const userId = req.session.user.id;
+    const user = await User.findById(userId);
+
+    const alreadyFavourite = user.favourites.some((favouriteId) =>
+        favouriteId.equals(homeId)
+    );
+
+        if (!alreadyFavourite) {
+        user.favourites.push(homeId);
+        await user.save();
+    }
+
+    res.redirect('/store/favourite-list');
     
     }
 
@@ -67,7 +66,7 @@ exports.homeDetail =(req,res,next)=>{
             res.render('store/home-detail',{home:home,
                 pageTitle:"Home",
                 isLoggedIn :req.isLoggedIn,
-                isAdmin:false})
+                isAdmin:req.isAdmin})
             
         }else{res.redirect('/home')}
         
@@ -79,13 +78,13 @@ exports.homeDetail =(req,res,next)=>{
 exports.bookings =(req,res,next)=>{
 res.render('store/bookings',{pageTitle:"Bookings",
     isLoggedIn :req.isLoggedIn,
-    isAdmin:false})
+    isAdmin:req.isAdmin})
 }
 
 exports.reserve =(req,res,next)=>{
 res.render('store/reserve',{pageTitle:"Reserves",
     isLoggedIn :req.isLoggedIn,
-    isAdmin:false})
+    isAdmin:req.isAdmin})
 }
 
 exports.home = (req,res,next)=>{
@@ -94,7 +93,7 @@ exports.home = (req,res,next)=>{
            console.log('session value', req.session)
         res.render('store/home',{registeredHomes,pageTitle:'Home',
             isLoggedIn :req.isLoggedIn,
-            isAdmin:false})
+            isAdmin:req.isAdmin})
 } )
 }
 

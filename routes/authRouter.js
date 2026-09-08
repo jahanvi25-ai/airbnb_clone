@@ -2,14 +2,17 @@
 //external module
 const express = require("express");
 //local module
-const {getAuth} = require("../controllers/authControllers");
-const {postAuth} = require("../controllers/authControllers");
+const {getAuth, getLogin} = require("../controllers/authControllers");
 const {postLogout} = require("../controllers/authControllers");
+const {postLogin} = require("../controllers/authControllers");
+const {getSignup, postSignup} = require("../controllers/authControllers");
 const authRouter = express.Router();
 
-authRouter.get("/login",getAuth);
-authRouter.post("/login",postAuth);
+authRouter.get("/login",getLogin);
+authRouter.post("/login",postLogin);
 authRouter.post("/logout",postLogout);
+authRouter.get("/signup",getSignup);
+authRouter.post("/signup", postSignup);
 
 
 module.exports = authRouter;
