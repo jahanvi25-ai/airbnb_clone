@@ -6,6 +6,11 @@ const homeSchema = mongoose.Schema({
   homeLocation: { type: String, required: true },
   homeRating: { type: Number, required: true },
   photoURL: { type: String, required: true },
+  // Cloudinary's public_id for this image, used to delete it from
+  // Cloudinary when the home is updated with a new photo or removed.
+  // Left empty for homes whose photoURL is a pasted external link (no
+  // Cloudinary asset to clean up) or for pre-Cloudinary legacy records.
+  photoPublicId: { type: String, default: null },
   // NOTE: "homeDiscription" is a typo carried over from the original schema.
   // Kept as-is on purpose — renaming it would silently orphan the field on
   // every home already saved in the database. Rename in a proper migration
