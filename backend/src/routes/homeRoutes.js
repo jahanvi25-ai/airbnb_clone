@@ -5,6 +5,7 @@ const {
   createHome,
   updateHome,
   deleteHome,
+  listMyHomes,
 } = require("../controllers/homeController");
 const { requireAuth, requireHost } = require("../middleware/auth");
 const upload = require("../middleware/upload");
@@ -12,6 +13,7 @@ const upload = require("../middleware/upload");
 const router = express.Router();
 
 router.get("/", listHomes);
+router.get("/mine", requireAuth, requireHost, listMyHomes);  
 router.get("/:homeId", getHome);
 
 // Host-only writes

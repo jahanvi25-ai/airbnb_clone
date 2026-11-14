@@ -27,6 +27,15 @@ exports.listHomes = async (req, res, next) => {
   }
 };
 
+exports.listMyHomes = async (req, res, next) => {
+  try {
+    const homes = await Home.find({ host: req.user.id });
+    res.json({ homes });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getHome = async (req, res, next) => {
   try {
     const home = await Home.findById(req.params.homeId);
@@ -41,8 +50,13 @@ exports.getHome = async (req, res, next) => {
 // stored on Cloudinary via the multer-storage-cloudinary middleware) or a
 // plain photoURL string in the body — see middleware/upload.js for why.
 exports.createHome = async (req, res, next) => {
+  console.log("controller reached");
+   console.log(req.body);
+  
+  
   try {
-    const { homeName, homePrice, homeLocation, homeRating, homeDiscription } = req.body;
+    
+    const { homeName, homePrice, homeLocation, homeRating, homeDiscription,  host } = req.body;
     const photoURL = req.file ? req.file.path : req.body.photoURL;
     const photoPublicId = req.file ? req.file.filename : null;
 
@@ -58,10 +72,12 @@ exports.createHome = async (req, res, next) => {
       photoURL,
       photoPublicId,
       homeDiscription,
+       host: req.user.id,
     });
     await home.save();
-
+     
     res.status(201).json({ home });
+  
   } catch (err) {
     next(err);
   }
@@ -71,7 +87,9 @@ exports.updateHome = async (req, res, next) => {
   try {
     const home = await Home.findById(req.params.homeId);
     if (!home) return res.status(404).json({ message: "Home not found" });
-
+    if (home.host.toString() !== req.user.id.toString()) {
+  return res.status(403).json({ message: "Not your listing" });
+}
     // Remember the old Cloudinary asset before we overwrite it, so we can
     // delete it once the update actually succeeds.
     const oldPublicId = home.photoPublicId;
@@ -111,7 +129,11 @@ exports.updateHome = async (req, res, next) => {
 
 exports.deleteHome = async (req, res, next) => {
   try {
-    const home = await Home.findByIdAndDelete(req.params.homeId);
+   
+   const home = await Home.findOneAndDelete({
+    _id: req.params.homeId,
+    host: req.user.id,
+   });
 
     if (!home) return res.status(404).json({ message: "Home not found" });
 

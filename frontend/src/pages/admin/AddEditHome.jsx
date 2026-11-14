@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getHome, createHome, updateHome } from "../../api/homes";
 import ErrorList from "../../components/ErrorList";
 import { resolveImageUrl } from "../../utils/resolveImageUrl";
+
 
 const emptyForm = {
   homeName: "",
@@ -22,6 +23,8 @@ export default function AddEditHome() {
   const [photoFile, setPhotoFile] = useState(null);
   const [filePreview, setFilePreview] = useState("");
   const [errors, setErrors] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (!photoFile) {
@@ -58,7 +61,11 @@ export default function AddEditHome() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors([]);
+   if (submittingRef.current) return; // already submitting, ignore extra clicks
+      submittingRef.current = true;
+      setSubmitting(true);
+      setErrors([]);
+
 
     const data = new FormData();
     data.append("homeName", form.homeName);
@@ -83,6 +90,9 @@ export default function AddEditHome() {
     } catch (err) {
       const message = err.response?.data?.message || "Something went wrong. Please try again.";
       setErrors([message]);
+    } finally{
+      submittingRef.current = false;
+      setSubmitting(false);
     }
   };
 
@@ -227,9 +237,15 @@ export default function AddEditHome() {
             />
           </div>
 
-          <button type="submit" className="btn-base btn-primary w-full">
-            {editing ? "Save changes" : "List this home"}
-          </button>
+         <button
+      type="submit"
+      disabled={submitting}
+      className="btn-base btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {submitting
+        ? editing ? "Saving..." : "Listing your home..."
+        : editing ? "Save changes" : "List this home"}
+        </button>
         </div>
       </form>
     </main>

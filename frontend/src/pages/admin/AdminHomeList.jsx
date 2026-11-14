@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import HomeCard from "../../components/HomeCard";
-import { getHomes, deleteHome } from "../../api/homes";
+import { getMyHomes, deleteHome } from "../../api/homes";
 
 export default function AdminHomeList() {
   const [homes, setHomes] = useState([]);
@@ -9,7 +9,7 @@ export default function AdminHomeList() {
 
   const load = () => {
     setLoading(true);
-    getHomes()
+    getMyHomes()
       .then(setHomes)
       .finally(() => setLoading(false));
   };
@@ -26,7 +26,7 @@ export default function AdminHomeList() {
   return (
     <main className="container mx-auto px-4 py-8">
       <h2 className="mb-8 text-center text-3xl font-bold text-red-500">
-        Here are our registered homes:
+        Here are your registered homes:
       </h2>
 
       <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

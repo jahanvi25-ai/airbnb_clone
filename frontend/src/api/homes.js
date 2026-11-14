@@ -1,7 +1,7 @@
 import apiClient from "./client";
 
 export const getHomes = () => apiClient.get("/homes").then((res) => res.data.homes);
-
+export const getMyHomes = () => apiClient.get("/homes/mine").then((res) => res.data.homes);
 export const getHome = (homeId) =>
   apiClient.get(`/homes/${homeId}`).then((res) => res.data.home);
 

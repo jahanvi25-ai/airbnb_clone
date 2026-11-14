@@ -16,6 +16,7 @@ const homeSchema = mongoose.Schema({
   // every home already saved in the database. Rename in a proper migration
   // later if you want it fixed, not by just editing this line.
   homeDiscription: String,
+  host: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 });
 
 module.exports = mongoose.model("Home", homeSchema);
